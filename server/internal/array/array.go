@@ -10,11 +10,10 @@ func Except[T any](arr []T, predicate func(item T) bool) []T {
 	}
 
 	if index != -1 {
-		if index+1 < len(arr) {
-			return append(arr[:index], arr[index+1:]...)
-		} else {
-			return arr[:index]
-		}
+		result := make([]T, 0, len(arr)-1)
+		result = append(result, arr[:index]...)
+		result = append(result, arr[index+1:]...)
+		return result
 	}
 
 	return arr

@@ -1,7 +1,6 @@
 export interface Message {
   text: string
   sender: string
-  timestamp: string
 }
 
 export interface WebSocketMessage {
