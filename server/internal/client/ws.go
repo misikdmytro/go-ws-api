@@ -32,7 +32,7 @@ type WebSocketClient interface {
 	Id() string
 	Launch(ctx context.Context)
 	Write(m model.WebSocketMessage) error
-	Close()
+	Close() error
 	Listen() <-chan model.WebSocketMessage
 	Done() <-chan interface{}
 	Error() <-chan error
@@ -163,7 +163,7 @@ func (c *webSocketClient) Write(m model.WebSocketMessage) error {
 	return c.ws.WriteJSON(m)
 }
 
-func (c *webSocketClient) Close() {
-	c.ws.Close()
+func (c *webSocketClient) Close() error {
 	close(c.msgs)
+	return c.ws.Close()
 }
