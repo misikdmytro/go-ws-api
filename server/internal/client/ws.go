@@ -68,7 +68,7 @@ func (c *webSocketClient) launch(ctx context.Context) {
 	cancellation, cancel := context.WithCancel(ctx)
 	defer func() {
 		cancel()
-		c.send(websocket.CloseMessage)
+		c.write(websocket.CloseMessage)
 	}()
 
 	wg.Add(1)
@@ -114,14 +114,14 @@ func (c *webSocketClient) ping(ctx context.Context) {
 	for {
 		select {
 		case <-ticker.C:
-			c.send(websocket.PingMessage)
+			c.write(websocket.PingMessage)
 		case <-ctx.Done():
 			return
 		}
 	}
 }
 
-func (c *webSocketClient) send(messageType int) {
+func (c *webSocketClient) write(messageType int) {
 	c.m.Lock()
 	defer c.m.Unlock()
 
