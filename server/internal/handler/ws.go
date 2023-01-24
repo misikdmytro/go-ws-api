@@ -64,7 +64,7 @@ func startClient(ctx context.Context, ws *websocket.Conn) {
 				return
 			} else {
 				switch msg.Type {
-				case "MESSAGE":
+				case wshandler.MESSAGE:
 					wshandler.NewMessage(clients, cl, msg.Content["message"])
 				default:
 					log.Printf("unknown message type: %s", msg.Type)
