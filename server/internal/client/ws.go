@@ -62,11 +62,7 @@ func (c *webSocketClient) Launch(ctx context.Context) {
 		var wg sync.WaitGroup
 
 		cancellation, cancel := context.WithCancel(ctx)
-		defer func() {
-			cancel()
-			c.send(websocket.CloseMessage)
-			c.done <- struct{}{}
-		}()
+		defer cancel()
 
 		wg.Add(1)
 		go func() {
@@ -83,6 +79,7 @@ func (c *webSocketClient) Launch(ctx context.Context) {
 		}()
 
 		wg.Wait()
+		c.done <- struct{}{}
 	}()
 }
 
@@ -113,6 +110,7 @@ func (c *webSocketClient) ping(ctx context.Context) {
 		case <-ticker.C:
 			c.send(websocket.PingMessage)
 		case <-ctx.Done():
+			c.send(websocket.CloseMessage)
 			return
 		}
 	}
