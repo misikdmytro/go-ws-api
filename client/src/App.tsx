@@ -1,9 +1,11 @@
 import React from 'react'
-import { useWebSocket } from './hooks/ws'
+import { Container } from '@mui/material'
+import Chat from './components/Chat'
 
-function App (): React.ReactElement<any, any> {
-  useWebSocket('ws://localhost:8080/ws')
-  return <div>Hello, world!</div>
+function App (): React.ReactElement {
+  return <Container>
+    <Chat></Chat>
+  </Container>
 }
 
 export default App
