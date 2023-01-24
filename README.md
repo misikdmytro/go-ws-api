@@ -1,3 +1,3 @@
-# WebSocket Chat
+# Go WebSocket Chat
 
-ToDo
+Chat described in [this Medium post](http://todo.com).
