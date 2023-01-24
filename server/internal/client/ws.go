@@ -25,6 +25,7 @@ type webSocketClient struct {
 	err  chan error
 	done chan interface{}
 	m    sync.Mutex
+	o    sync.Once
 }
 
 type WebSocketClient interface {
@@ -58,29 +59,34 @@ func (c *webSocketClient) Launch(ctx context.Context) {
 	c.ws.SetReadDeadline(time.Now().Add(pongWait))
 	c.ws.SetPongHandler(func(string) error { c.ws.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 
-	go func() {
-		var wg sync.WaitGroup
+	c.o.Do(func() { go c.launch(ctx) })
+}
 
-		cancellation, cancel := context.WithCancel(ctx)
-		defer cancel()
+func (c *webSocketClient) launch(ctx context.Context) {
+	var wg sync.WaitGroup
 
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			c.read(cancellation)
-			cancel()
-		}()
-
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			c.ping(cancellation)
-			cancel()
-		}()
-
-		wg.Wait()
-		c.done <- struct{}{}
+	cancellation, cancel := context.WithCancel(ctx)
+	defer func() {
+		cancel()
+		c.send(websocket.CloseMessage)
 	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		c.read(cancellation)
+		cancel()
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		c.ping(cancellation)
+		cancel()
+	}()
+
+	wg.Wait()
+	c.done <- struct{}{}
 }
 
 func (c *webSocketClient) read(ctx context.Context) {
@@ -110,7 +116,6 @@ func (c *webSocketClient) ping(ctx context.Context) {
 		case <-ticker.C:
 			c.send(websocket.PingMessage)
 		case <-ctx.Done():
-			c.send(websocket.CloseMessage)
 			return
 		}
 	}
